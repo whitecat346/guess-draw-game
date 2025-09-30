@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你画我猜 - 联机游戏</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div id="login-screen" class="screen">
+        <div class="login-container">
+            <h1>🎨 你画我猜</h1>
+            <div class="login-form">
+                <input type="text" id="player-name" placeholder="输入你的昵称" maxlength="20">
+                <input type="text" id="room-id" placeholder="房间号 (留空自动生成)" maxlength="10">
+                <button id="join-button">加入游戏</button>
+            </div>
+            <div class="game-info">
+                <h3>游戏规则</h3>
+                <ul>
+                    <li>每轮有一名玩家负责画图</li>
+                    <li>其他玩家在聊天框中猜词</li>
+                    <li>猜对得分，画家也会得分</li>
+                    <li>每轮限时60秒</li>
+                    <li>游戏进行3轮</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="screen hidden">
+        <div class="game-header">
+            <div class="room-info">
+                <span>房间: <span id="current-room-id"></span></span>
+                <span>轮次: <span id="current-round">1</span>/<span id="max-rounds">3</span></span>
+                <span>时间: <span id="time-left">60</span>s</span>
+            </div>
+            <div class="game-status">
+                <div id="current-word-display"></div>
+                <div id="game-message"></div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <!-- 左侧：画布和工具 -->
+            <div class="canvas-section">
+                <div class="canvas-tools">
+                    <div class="tool-group">
+                        <label>画笔大小:</label>
+                        <input type="range" id="brush-size" min="1" max="20" value="3">
+                        <span id="brush-size-display">3</span>
+                    </div>
+                    <div class="tool-group">
+                        <label>颜色:</label>
+                        <div class="color-palette">
+                            <div class="color-option active" data-color="#000000" style="background: #000000"></div>
+                            <div class="color-option" data-color="#FF0000" style="background: #FF0000"></div>
+                            <div class="color-option" data-color="#00FF00" style="background: #00FF00"></div>
+                            <div class="color-option" data-color="#0000FF" style="background: #0000FF"></div>
+                            <div class="color-option" data-color="#FFFF00" style="background: #FFFF00"></div>
+                            <div class="color-option" data-color="#FF00FF" style="background: #FF00FF"></div>
+                            <div class="color-option" data-color="#00FFFF" style="background: #00FFFF"></div>
+                            <div class="color-option" data-color="#FFA500" style="background: #FFA500"></div>
+                        </div>
+                    </div>
+                    <button id="clear-canvas" class="tool-button">清空画布</button>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="drawing-canvas" width="600" height="400"></canvas>
+                </div>
+            </div>
+
+            <!-- 右侧：玩家列表和聊天 -->
+            <div class="sidebar">
+                <div class="players-section">
+                    <h3>玩家 (<span id="player-count">0</span>)</h3>
+                    <div id="players-list"></div>
+                </div>
+
+                <div class="chat-section">
+                    <h3>聊天/猜词</h3>
+                    <div id="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="输入你的猜测..." maxlength="50">
+                        <button id="send-button">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏结束界面 -->
+    <div id="end-screen" class="screen hidden">
+        <div class="end-container">
+            <h1>🎉 游戏结束</h1>
+            <div id="final-scores"></div>
+            <button id="new-game-button">开始新游戏</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
