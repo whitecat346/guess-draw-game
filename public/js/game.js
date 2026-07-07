@@ -668,7 +668,7 @@ class GuessDrawGame {
        聊天 & 计时器
        ═══════════════════════════════════════════ */
     sendGameChat() { const m=this.chatInput.value.trim(); if(!m||!this.socket)return; this.socket.emit('chat-message',m); this.chatInput.value=''; }
-    sendWaitingChat() { const m=this.waitingChatInput.value.trim(); if(!m||!this.socket)return; this.socket.emit('chat-message',m); this.addWaitingChat(`你: ${m}`,'user'); this.waitingChatInput.value=''; }
+    sendWaitingChat() { const m=this.waitingChatInput.value.trim(); if(!m||!this.socket)return; this.socket.emit('chat-message',m); this.waitingChatInput.value=''; }
     addWaitingChat(c,t){this._addChatTo(this.waitingChatMessages,c,t);}
     addGameChat(c,t){this._addChatTo(this.chatMessages,c,t);}
     _addChatTo(ct,c,t){const d=document.createElement('div');d.className=`chat-msg ${t}`;d.innerHTML=c;ct.appendChild(d);ct.scrollTop=ct.scrollHeight;}
