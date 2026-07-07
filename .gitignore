@@ -14,6 +14,9 @@ pids
 coverage/
 *.lcov
 
+# Reasonix
+.reasonix/
+
 # nyc test coverage
 .nyc_output
 
