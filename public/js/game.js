@@ -70,6 +70,8 @@ class GuessDrawGame {
         this.importStatus       = document.getElementById('import-status');
         this.waitingMaxRounds   = document.getElementById('waiting-max-rounds');
         this.btnApplyRounds     = document.getElementById('btn-apply-rounds');
+        this.waitingRoundTime   = document.getElementById('waiting-round-time');
+        this.btnApplyRoundtime  = document.getElementById('btn-apply-roundtime');
         this.btnStartGame       = document.getElementById('btn-start-game');
         this.waitingChatMessages = document.getElementById('waiting-chat-messages');
         this.waitingChatInput   = document.getElementById('waiting-chat-input');
@@ -272,6 +274,7 @@ class GuessDrawGame {
         this.copyRoomBtn.addEventListener('click', () => this.copyRoomCode());
         this.btnApplyWordbank.addEventListener('click', () => this.applyWordBank());
         this.btnApplyRounds.addEventListener('click', () => this.applyRounds());
+        this.btnApplyRoundtime.addEventListener('click', () => this.applyRoundtime());
         this.btnStartGame.addEventListener('click', () => this.requestStartGame());
         this.btnImportWordbank.addEventListener('click', () => this.wordbankFileInput.click());
         this.wordbankFileInput.addEventListener('change', (e) => this.handleWordbankUpload(e));
@@ -705,7 +708,7 @@ class GuessDrawGame {
         else if(gs.gameState==='playing'){if(this.currentScreen!=='game')this.switchScreen('game');this.updateGameUI(gs);this.setupLocalTimer(gs);this.updateCanvasState();}
         else if(gs.gameState==='ended'){if(this.currentScreen!=='game')this.switchScreen('game');this.updateGameUI(gs);setTimeout(()=>this.showEndScreen(),2000);}}
 
-    updateWaitingUI(gs){const pl=gs.players||[];this.waitingPlayerCount.textContent=pl.length;this.waitingRoomId.textContent=gs.roomId;const isH=gs.hostId===this.playerId;if(isH){this.hostConfigCard.classList.remove('hidden');this.waitingHint.textContent='你是房主，配置好后点击「开始游戏」';this.btnStartGame.disabled=pl.length<2;this.btnStartGame.textContent=pl.length>=2?`🚀 开始游戏（${pl.length} 名玩家）`:'🚀 开始游戏（至少需要2名玩家）';this.waitingMaxRounds.value=gs.maxRounds;}else{this.hostConfigCard.classList.add('hidden');this.waitingHint.textContent='等待房主开始游戏...';}if(gs.wordBankName)this.wordBankSelect.value=gs.wordBankName;this.renderWaitingPlayers(pl,gs);}
+    updateWaitingUI(gs){const pl=gs.players||[];this.waitingPlayerCount.textContent=pl.length;this.waitingRoomId.textContent=gs.roomId;const isH=gs.hostId===this.playerId;if(isH){this.hostConfigCard.classList.remove('hidden');this.waitingHint.textContent='你是房主，配置好后点击「开始游戏」';this.btnStartGame.disabled=pl.length<2;this.btnStartGame.textContent=pl.length>=2?`🚀 开始游戏（${pl.length} 名玩家）`:'🚀 开始游戏（至少需要2名玩家）';this.waitingMaxRounds.value=gs.maxRounds;this.waitingRoundTime.value=Math.round((gs.roundDuration||60000)/1000);}else{this.hostConfigCard.classList.add('hidden');this.waitingHint.textContent='等待房主开始游戏...';}if(gs.wordBankName)this.wordBankSelect.value=gs.wordBankName;this.renderWaitingPlayers(pl,gs);}
     renderWaitingPlayers(pl,gs){this.waitingPlayersList.innerHTML='';pl.forEach(p=>{const d=document.createElement('div');d.className='player-badge';d.innerHTML=`<span class="badge-name">${p.name}${p.id===gs.hostId?'<span class="badge-host">👑</span>':''}${p.id===this.playerId?'<span class="badge-you">我</span>':''}</span><span style="color:var(--text-tertiary);font-size:0.8rem">${p.score} 分</span>`;this.waitingPlayersList.appendChild(d);});}
     updateGameUI(gs){this.currentRoomId.textContent=gs.roomId;this.currentRound.textContent=gs.roundNumber;this.maxRounds.textContent=gs.maxRounds;this.updatePlayersList(gs.players);this.updateWordDisplay(gs);}
     updatePlayersList(pl){this.playerCount.textContent=pl.length;this.playersList.innerHTML='';pl.forEach(p=>{const d=document.createElement('div');d.className='player-item';if(p.id===this.gameState.currentDrawer)d.classList.add('current-drawer');if(p.id===this.playerId)d.classList.add('self');d.innerHTML=`<span class="player-name">${p.name}</span><span class="player-score">${p.score} 分</span>`;this.playersList.appendChild(d);});}
@@ -721,6 +724,7 @@ class GuessDrawGame {
     async uploadWordBank(bn,text){try{const r=await fetch(`/api/wordbanks?name=${encodeURIComponent(bn)}`,{method:'POST',headers:{'Content-Type':'text/plain; charset=utf-8'},body:text});const j=await r.json();if(r.ok&&j.ok){this.setImportStatus(`✅ 词库「${bn}」导入成功 (${j.count}词)`,'success');this.addWaitingChat(`📚 自定义词库「${bn}」已导入 (${j.count}词)`,'system');}else this.setImportStatus(`❌ ${j.error||'导入失败'}`,'error');}catch{this.setImportStatus('❌ 网络错误，导入失败','error');}}
     setImportStatus(msg,type){this.importStatus.textContent=msg;this.importStatus.className='config-hint';if(type)this.importStatus.classList.add(type);setTimeout(()=>{this.importStatus.textContent='';this.importStatus.className='config-hint';},4000);}
     applyRounds(){if(!this.socket)return;const v=parseInt(this.waitingMaxRounds.value,10);if(isNaN(v)||v<1)return;this.socket.emit('set-max-rounds',{maxRounds:v});this.addWaitingChat(`总轮数已设置为：${v} 轮`,'system');}
+    applyRoundtime(){if(!this.socket)return;const v=parseInt(this.waitingRoundTime.value,10);if(isNaN(v)||v<10)return;this.socket.emit('set-round-duration',{duration:v});this.addWaitingChat(`每轮时间已设置为：${v} 秒`,'system');}
     requestStartGame(){if(this.socket)this.socket.emit('start-game');}
     copyRoomCode(){const c=this.waitingRoomId.textContent;if(!c||c==='------')return;navigator.clipboard.writeText(c).then(()=>{this.copyRoomBtn.style.color='var(--success)';setTimeout(()=>{this.copyRoomBtn.style.color='';},1500);}).catch(()=>{const inp=document.createElement('input');inp.value=c;document.body.appendChild(inp);inp.select();document.execCommand('copy');document.body.removeChild(inp);});}
 

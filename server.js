@@ -285,6 +285,7 @@ class Room {
             roundNumber: this.roundNumber,
             maxRounds: this.maxRounds,
             timeLeft: Math.max(0, this.roundDuration - (Date.now() - this.roundStartTime)),
+            roundDuration: this.roundDuration,
             hostId: this.hostId,
             wordBankName: this.wordBankName
         };
@@ -459,6 +460,21 @@ io.on('connection', (socket) => {
             room.gameState = 'ended';
             room.roundActive = false;
         }
+
+        io.to(socket.roomId).emit('game-state', room.getGameState());
+    });
+
+    // 房主设置每轮时间
+    socket.on('set-round-duration', (data) => {
+        const room = rooms.get(socket.roomId);
+        if (!room) return;
+        if (socket.id !== room.hostId) return;
+
+        const { duration } = data || {};
+        let value = parseInt(duration, 10);
+        if (isNaN(value)) return;
+        value = Math.max(10, Math.min(300, value));
+        room.roundDuration = value * 1000;
 
         io.to(socket.roomId).emit('game-state', room.getGameState());
     });

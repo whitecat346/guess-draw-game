@@ -34,15 +34,6 @@
                     </svg>
                 </button>
             </div>
-            <div class="divider">
-                <span>游戏规则</span>
-            </div>
-            <ul class="rules-list">
-                <li><span class="rule-icon">🖌️</span> 每轮有一名玩家负责画图</li>
-                <li><span class="rule-icon">💬</span> 其他玩家在聊天框中猜词</li>
-                <li><span class="rule-icon">⭐</span> 猜对得分，画家也会得分</li>
-                <li><span class="rule-icon">⏱️</span> 每轮限时60秒，首位猜对者立刻进入下一轮（抢答模式）</li>
-            </ul>
         </div>
     </div>
 
@@ -116,6 +107,14 @@
                             <div class="config-control-row">
                                 <input id="waiting-max-rounds" type="number" min="1" max="20" value="3" class="input-number">
                                 <button id="btn-apply-rounds" class="btn btn-sm btn-outline">应用</button>
+                            </div>
+                        </div>
+                        <!-- 每轮时间 -->
+                        <div class="config-item">
+                            <label class="config-label">每轮时间（秒）</label>
+                            <div class="config-control-row">
+                                <input id="waiting-round-time" type="number" min="10" max="300" value="60" class="input-number">
+                                <button id="btn-apply-roundtime" class="btn btn-sm btn-outline">应用</button>
                             </div>
                         </div>
                         <!-- 开始游戏 -->
