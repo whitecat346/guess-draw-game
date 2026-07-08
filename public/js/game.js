@@ -62,6 +62,8 @@ class GuessDrawGame {
         this.waitingPlayerCount  = document.getElementById('waiting-player-count');
         this.waitingHint        = document.getElementById('waiting-hint');
         this.waitingPlayersList  = document.getElementById('waiting-players-list');
+        this.waitingPlayersCard = document.getElementById('waiting-players-card');
+        this.waitingPlayersCollapseBtn = document.getElementById('waiting-players-collapse-btn');
         this.hostConfigCard     = document.getElementById('host-config-card');
         this.wordBankSelect     = document.getElementById('word-bank-select');
         this.btnApplyWordbank   = document.getElementById('btn-apply-wordbank');
@@ -102,8 +104,12 @@ class GuessDrawGame {
 
         this.playerCount  = document.getElementById('player-count');
         this.playersList  = document.getElementById('players-list');
+        this.gamePlayersCard = document.getElementById('game-players-card');
+        this.gamePlayersCollapseBtn = document.getElementById('game-players-collapse-btn');
         this.chatMessages = document.getElementById('chat-messages');
         this.chatInput    = document.getElementById('chat-input');
+        this.chatCard     = document.getElementById('game-chat-card');
+        this.chatCollapseBtn = document.getElementById('chat-collapse-btn');
         this.sendButton   = document.getElementById('send-button');
 
         this.finalScores   = document.getElementById('final-scores');
@@ -265,10 +271,19 @@ class GuessDrawGame {
         });
 
         // ── Chat ──
+        this.chatCollapseBtn.addEventListener('click', () => this.toggleChatCollapse());
+        this.waitingPlayersCollapseBtn.addEventListener('click', () => this.toggleWaitingPlayersCollapse());
+        this.gamePlayersCollapseBtn.addEventListener('click', () => this.toggleGamePlayersCollapse());
         this.sendButton.addEventListener('click', () => this.sendGameChat());
         this.chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.sendGameChat(); });
         this.waitingSendButton.addEventListener('click', () => this.sendWaitingChat());
         this.waitingChatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.sendWaitingChat(); });
+
+        // ── Mobile input focus handling ──
+        this.chatInput.addEventListener('focus', () => this.handleInputFocus(this.chatInput));
+        this.chatInput.addEventListener('blur', () => this.handleInputBlur());
+        this.waitingChatInput.addEventListener('focus', () => this.handleInputFocus(this.waitingChatInput));
+        this.waitingChatInput.addEventListener('blur', () => this.handleInputBlur());
 
         // ── Waiting config ──
         this.copyRoomBtn.addEventListener('click', () => this.copyRoomCode());
@@ -676,6 +691,23 @@ class GuessDrawGame {
     addGameChat(c,t){this._addChatTo(this.chatMessages,c,t);}
     _addChatTo(ct,c,t){const d=document.createElement('div');d.className=`chat-msg ${t}`;d.innerHTML=c;ct.appendChild(d);ct.scrollTop=ct.scrollHeight;}
 
+    /* ── Mobile input focus handling ── */
+    handleInputFocus(input) {
+        if (window.innerWidth <= 768) {
+            setTimeout(() => {
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+    }
+
+    handleInputBlur() {
+        if (window.innerWidth <= 768) {
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 200);
+        }
+    }
+
     setupLocalTimer(gs){this.clearLocalTimer();if(gs.gameState==='playing'){this.localTimeLeftMs=Math.max(0,gs.timeLeft|0);this.updateTimeDisplay(this.localTimeLeftMs);this.timerInterval=setInterval(()=>{this.localTimeLeftMs=Math.max(0,this.localTimeLeftMs-1000);this.updateTimeDisplay(this.localTimeLeftMs);if(this.localTimeLeftMs<=0)this.clearLocalTimer();},1000);}else this.updateTimeDisplay(0);}
     clearLocalTimer(){if(this.timerInterval){clearInterval(this.timerInterval);this.timerInterval=null;}}
     updateTimeDisplay(tl){const s=Math.ceil(tl/1000);this.timeLeft.textContent=Math.max(0,s);this.timeLeft.classList.toggle('urgent',s<=10&&s>0);}
@@ -713,7 +745,11 @@ class GuessDrawGame {
     updateGameUI(gs){this.currentRoomId.textContent=gs.roomId;this.currentRound.textContent=gs.roundNumber;this.maxRounds.textContent=gs.maxRounds;this.updatePlayersList(gs.players);this.updateWordDisplay(gs);}
     updatePlayersList(pl){this.playerCount.textContent=pl.length;this.playersList.innerHTML='';pl.forEach(p=>{const d=document.createElement('div');d.className='player-item';if(p.id===this.gameState.currentDrawer)d.classList.add('current-drawer');if(p.id===this.playerId)d.classList.add('self');d.innerHTML=`<span class="player-name">${p.name}</span><span class="player-score">${p.score} 分</span>`;this.playersList.appendChild(d);});}
     updateWordDisplay(gs){if(gs.gameState==='playing'){if(this.isCurrentDrawer){this.currentWordDisplay.textContent=`🎯 请画：${gs.currentWord}`;this.currentWordDisplay.style.color='var(--danger)';}else{this.currentWordDisplay.textContent=`🔍 猜词：${'？'.repeat(gs.currentWord.length)}`;this.currentWordDisplay.style.color='var(--accent)';}}else this.currentWordDisplay.textContent='';}
-    updateCanvasState(){if(this.isCurrentDrawer&&this.gameState.gameState==='playing'){this.canvas.classList.remove('disabled');this.clearCanvasButton.disabled=false;}else{this.canvas.classList.add('disabled');this.clearCanvasButton.disabled=true;}}
+    updateCanvasState(){if(this.isCurrentDrawer&&this.gameState.gameState==='playing'){this.canvas.classList.remove('disabled');this.clearCanvasButton.disabled=false;this.autoCollapseChat();}else{this.canvas.classList.add('disabled');this.clearCanvasButton.disabled=true;}}
+    toggleChatCollapse(){this.chatCard.classList.toggle('collapsed');}
+    toggleWaitingPlayersCollapse(){this.waitingPlayersCard.classList.toggle('collapsed');}
+    toggleGamePlayersCollapse(){this.gamePlayersCard.classList.toggle('collapsed');}
+    autoCollapseChat(){if(window.innerWidth<=768&&!this.chatCard.classList.contains('collapsed')){this.chatCard.classList.add('collapsed');}}
 
     /* ═══════════════════════════════════════════
        词库 & 配置
